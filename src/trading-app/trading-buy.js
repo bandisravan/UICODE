@@ -17,6 +17,7 @@ class TradingBuyApp extends PolymerElement {
     }
     connectedCallback(){
         super.connectedCallback();
+        this.$.purchaseForm.reset();
         this.$.stockQuantity.addEventListener('change', function(event) { 
             //calculate the total price
             this.calculateTotalPrice(event.target.value);  
@@ -27,9 +28,9 @@ class TradingBuyApp extends PolymerElement {
             ajaxEle.contentType = "application/json";
             let curData = new Date();
             let current = curData.getFullYear()+' '+(curData.getMonth()+1)+' '+curData.getDate()+' '+curData.getHours()+':'+curData.getMinutes()+':'+curData.getSeconds();
-           //this.calculateTotalPrice(this.stockQuantityVal);
+            //this.calculateTotalPrice(this.stockQuantityVal);
             let data = { 
-                "stockId":1,
+                "stockId":this.stockId,
                 "stockName" : this.stockName,
                 "userId":1,
                 "quantity" : parseFloat(this.stockQuantityVal),
@@ -103,7 +104,7 @@ class TradingBuyApp extends PolymerElement {
       
     <div>
       <paper-dropdown-menu label="Select Stock" id="stockSelect" on-iron-select="_stockSelected" required>
-      <paper-listbox slot="dropdown-content" selected="{{selectedStock}}">
+      <paper-listbox slot="dropdown-content">
       <template is="dom-repeat" items="[[stockList]]">
         <paper-item value="[[item.stockId]]">[[item.name]]</paper-item>
         </template>
@@ -176,7 +177,7 @@ class TradingBuyApp extends PolymerElement {
   _stockSelected(e){
       let selItem = e.target.selectedItem;
       this.stockName = selItem.textContent;
-      this.stockId =selItem.getAttribute('value');
+      this.stockId =selItem.value;
       this.$.stockPriceAjax.generateRequest();
   }
   _submitCancel(){

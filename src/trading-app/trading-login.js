@@ -47,7 +47,6 @@ class TradingLoginApp extends PolymerElement {
   }
 
   goBuy(){
-      debugger;
       //this.user = {'name':this.$.userSelect.selectedItemLabel, "userId":""}
       let selItem = this.$.userSelect;
       let uName = selItem.textContent;
