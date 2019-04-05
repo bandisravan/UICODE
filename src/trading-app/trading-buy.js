@@ -18,23 +18,33 @@ class TradingBuyApp extends PolymerElement {
     connectedCallback(){
         super.connectedCallback();
         this.$.stockQuantity.addEventListener('change', function(event) { 
-            let quantity = event.target.value;  
-            let quote = this.stockPrice * quantity;
-            let stockQuote = parseFloat(quote).toFixed(3);
-            this.stockQuote = stockQuote;
-            let fees;
-            if(quantity < 500){
-               fees =  quantity*0.10;
-            }else if(quantity >= 500){
-               let totalHun = parseFloat(quantity/100);
-               fees = totalHun*0.15;
-            }
-            fees = parseFloat(fees).toFixed(3);
-            this.fees = fees;
-            this.totalPurchasePrice = stockQuote;
-            this.$.stockQuoteDetails.innerHTML = 'Quote: Rs '+this.totalPurchasePrice;
-            debugger;
+            //calculate the total price
+            this.calculateTotalPrice(event.target.value);  
+                      
         }.bind(this));
+        this.$.purchaseForm.addEventListener('iron-form-submit',function(e){
+            let ajaxEle = this.$.purchaseAjax;
+            ajaxEle.contentType = "application/json";
+            let curData = new Date();
+            let current = curData.getFullYear()+' '+(curData.getMonth()+1)+' '+curData.getDate()+' '+curData.getHours()+':'+curData.getMinutes()+':'+curData.getSeconds();
+           //this.calculateTotalPrice(this.stockQuantityVal);
+            let data = { 
+                "stockId":1,
+                "stockName" : this.stockName,
+                "userId":1,
+                "quantity" : parseFloat(this.stockQuantityVal),
+                "stockPrice" :parseFloat(this.stockPrice),
+                "totalStockPurchasePrice":parseFloat(this.stockQuote),
+                "totalFees" :parseFloat(this.fees),
+                "totalIncludingFee":parseFloat(this.totalPurchasePrice),
+                "tradedTime": current
+                };
+                ajaxEle.body = JSON.stringify(data);
+                ajaxEle.generateRequest();
+
+            
+        }.bind(this));
+        
 
     }
   static get template() {
@@ -53,6 +63,9 @@ class TradingBuyApp extends PolymerElement {
         #notifyMsg{
             background:green;
         }
+        #note{
+            color:#ff6200;
+        }
       </style>
       <iron-ajax
           auto
@@ -64,19 +77,32 @@ class TradingBuyApp extends PolymerElement {
       
       <iron-ajax
           id="stockPriceAjax"
-          url="https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=PNB&apikey=TJH78Y0TF89JM899"
+          url="https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=[[stockName]]&apikey=TJH78Y0TF89JM899"
           handle-as="json"
           method="GET"
           on-response="_handleStockPriceResponse">
       </iron-ajax>
 
-      <div class="card">
+      
+      <iron-ajax
+          id="purchaseAjax"
+          url="http://10.117.189.235:3003/api/v1/submit"
+          handle-as="json"
+          method="POST"
+          on-response="_handlePurchaseResponse"
+          content-type="application/json">
+      </iron-ajax>
+      <div id="formView" class="card">
       <h2>Purchase Stock</h2>
-        <iron-form id="purchaseForm">
+      <div class="showForm" id="showForm">
+        <iron-form id="purchaseForm" >
       <form>
+      <div id="note">
+      ***Stock prices change regularly and the quote is subject to change.  The order will be placed with the live price at the time of submission.  To help customers with this we will provide a ‘Re-Quote’ option to get the latest price.
+      </div>
       
     <div>
-      <paper-dropdown-menu label="Select Stock" id="stockSelect"  on-iron-select="_stockSelected" required>
+      <paper-dropdown-menu label="Select Stock" id="stockSelect" on-iron-select="_stockSelected" required>
       <paper-listbox slot="dropdown-content" selected="{{selectedStock}}">
       <template is="dom-repeat" items="[[stockList]]">
         <paper-item value="[[item.stockId]]">[[item.name]]</paper-item>
@@ -92,6 +118,10 @@ class TradingBuyApp extends PolymerElement {
     <paper-button raised on-click="_submitCancel">Cancel</paper-button>
       </form>
     </iron-form>
+    </div>
+    <div id="showSummary" style="display:none;">
+<p>Purchased Successfully.</p> <p>Stock Name: [[stockName]]</p><p>Stock Purchase Price: [[totalPurchasePrice]]</p>
+    </div>
       </div>
       <paper-toast text="Submitted Successfully" id="notifyMsg" horizontal-align="right">
 </paper-toast>
@@ -111,6 +141,9 @@ class TradingBuyApp extends PolymerElement {
           notify:true
       },
       stockPrice:{
+          type:Number
+      },
+      stockQuantityVal:{
           type:Number
       },
       stockData:{
@@ -145,6 +178,39 @@ class TradingBuyApp extends PolymerElement {
       this.stockName = selItem.textContent;
       this.stockId =selItem.getAttribute('value');
       this.$.stockPriceAjax.generateRequest();
+  }
+  _submitCancel(){
+      this.$.purchaseForm.reset();
+      this.$.stockQuoteDetails.innerHTML='';
+      this.$.stockDetails.innerHTML = '';
+  }
+  _submitConfirm(e){
+      if(this.$.purchaseForm.validate()){
+          this.$.purchaseForm.submit();
+      }
+  }
+
+  calculateTotalPrice(data){
+      let quantity = data;  
+      this.stockQuantityVal = quantity;
+            let quote = this.stockPrice * quantity;
+            let stockQuote = parseFloat(quote);
+            this.stockQuote = stockQuote;
+            let fees;
+            if(quantity < 500){
+               fees =  quantity*0.10;
+            }else if(quantity >= 500){
+               let totalHun = parseFloat(quantity/100);
+               fees = totalHun*0.15;
+            }
+            fees = parseFloat(fees);
+            this.fees = fees;
+            this.totalPurchasePrice = (parseFloat(stockQuote)+parseFloat(fees)).toFixed(3);
+            this.$.stockQuoteDetails.innerHTML = 'Quote (including brokerage): Rs '+this.totalPurchasePrice;   
+  }
+  _handlePurchaseResponse(e){
+      this.$.showForm.style.display="none";
+      this.$.showSummary.style.display="block";
   }
    
 

@@ -26,7 +26,7 @@ class TradingLoginApp extends PolymerElement {
         <paper-dropdown-menu label="Select User" id="userSelect">
       <paper-listbox slot="dropdown-content" selected="0">
       <template is="dom-repeat" items="[[userList]]">
-        <paper-item>[[item]]</paper-item>
+        <paper-item value="[[item.uId]]">[[item.name]]</paper-item>
         </template>
       </paper-listbox>
     </paper-dropdown-menu>
@@ -38,7 +38,7 @@ class TradingLoginApp extends PolymerElement {
     return {
       userList: {
         type: Array,
-        value: ['user1','user2']
+        value: [{"uId":1,"name":"user1"}]
       },
       user:{
           type:Object
@@ -48,7 +48,11 @@ class TradingLoginApp extends PolymerElement {
 
   goBuy(){
       debugger;
-      this.user = {'name':this.$.userSelect.selectedItemLabel}
+      //this.user = {'name':this.$.userSelect.selectedItemLabel, "userId":""}
+      let selItem = this.$.userSelect;
+      let uName = selItem.textContent;
+      let uId =selItem.getAttribute('value');
+      this.user = {'name':this.$.userSelect.selectedItemLabel, "userId":1}
       this.set('route.path','/buy');
   }
 

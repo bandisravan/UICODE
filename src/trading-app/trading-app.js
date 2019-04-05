@@ -57,9 +57,8 @@ class TradingApp extends PolymerElement {
                   <div main-title>ING Online Trader</div> 
                   <iron-selector selected="[[page]]" attr-for-selected="name">
                     <a name="home" href="[[rootPath]]home">Home</a>
-                      <a name="buy" href="[[rootPath]]buy" tabindex="-1">Purchase</a>
-                      <a name="summary" href="[[rootPath]]summary" tabindex="-1">Summary</a>
-                      <a name="history" href="[[rootPath]]history" tabindex="-1">History</a>
+                      <a name="buy" href="[[rootPath]]buy">Purchase</a>
+                      <a name="history" href="[[rootPath]]history">History</a>
                   </iron-selector>               
                 </app-toolbar>
             </app-header>
@@ -67,7 +66,6 @@ class TradingApp extends PolymerElement {
         <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
           <trading-login name="home" route="{{route}}"></trading-login>
           <trading-buy name="buy" route="{{route}}"></trading-buy>
-          <trading-summary name="summary" route="{{route}}"></trading-summary>
           <trading-history name="history" route="{{route}}"></trading-history>
           <trading-notfound name="notFound" route="{{route}}"></trading-notfound>
         </iron-pages>
