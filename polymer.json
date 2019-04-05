@@ -1,0 +1,24 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/trading-app/trading-app.js",
+  "sources": [
+    "src/*/*.*",
+    "package.json"
+  ],
+  "extraDependencies": [
+    "manifest.json",
+    "node_modules/@webcomponents/webcomponentsjs/**"
+  ],
+  "npm": true,
+  "builds": [
+    {
+      "name": "es5prodcourse",
+      "preset": "es5-bundled"
+    }
+  ],
+  "lint": {
+    "rules": [
+      "polymer-3"
+    ]
+  }
+} 

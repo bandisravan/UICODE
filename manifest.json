@@ -1,0 +1,6 @@
+{
+  "name": "trading",
+  "short_name": "trading",
+  "start_url": "/",
+  "display": "standalone"
+}
