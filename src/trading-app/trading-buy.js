@@ -70,7 +70,7 @@ class TradingBuyApp extends PolymerElement {
       </style>
       <iron-ajax
           auto
-          url="http://10.117.189.186:8080/api/v1/stock"
+          url="http://13.126.214.15:9090/api/v1/stock"
           handle-as="json"
           method="GET"
           on-response="_handleStockResponse">
@@ -87,7 +87,7 @@ class TradingBuyApp extends PolymerElement {
       
       <iron-ajax
           id="purchaseAjax"
-          url="http://10.117.189.235:3003/api/v1/submit"
+          url="http://13.126.214.15:9090/api/v1/submit"
           handle-as="json"
           method="POST"
           on-response="_handlePurchaseResponse"

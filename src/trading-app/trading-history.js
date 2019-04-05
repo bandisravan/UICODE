@@ -30,7 +30,7 @@ class TradingHistoryApp extends PolymerElement {
       </style>
       <iron-ajax
           id="historyAjax"
-          url="http://10.117.189.48:3000/api/v1/viewHistory/1"
+          url="http://13.126.214.15:9090/api/v1/viewHistory/1"
           handle-as="json"
           method="GET"
           on-response="_handleHistoryResponse">
