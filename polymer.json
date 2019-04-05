@@ -13,7 +13,7 @@
   "npm": true,
   "builds": [
     {
-      "name": "es5prodcourse",
+      "name": "es5prod",
       "preset": "es5-bundled"
     }
   ],
