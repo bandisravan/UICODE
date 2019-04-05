@@ -4,13 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-    <title>trading</title>
+    <title>Trading</title>
     <meta name="description" content="trading description">
     <base href="./">
     <!-- See https://goo.gl/OOhYW5 -->
     <link rel="manifest" href="./manifest.json">
+    <script>
+      window.MyAppGlobals = {'rootPath': '/'};
+    </script>
 
     <script src="./node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="./node_modules/web-animations-js/web-animations-next.min.js"  crossorigin></script>
 
     <script type="module" src="./src/trading-app/trading-app.js" crossorigin></script>
   </head>
