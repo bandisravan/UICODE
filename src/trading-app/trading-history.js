@@ -36,6 +36,7 @@ class TradingHistoryApp extends PolymerElement {
           on-response="_handleHistoryResponse">
       </iron-ajax>
       <div class="card">
+      <h2>Review Orders</h2>
         <vaadin-grid id="historyGrid" items="[[historyList]]">      
 
         <vaadin-grid-sort-column width="9em" header="Stock name" path="stockName"></vaadin-grid-sort-column>

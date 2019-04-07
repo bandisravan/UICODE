@@ -112,7 +112,7 @@ class TradingStocksApp extends PolymerElement {
         <template is="dom-repeat" items="[[stockList]]">
         <tr style="1px #000 solid !important; width:600px;">
         <td style="1px #000 solid !important; width:600px;">
-        <vaadin-accordion-panel opened$=[[openedFlag]]>
+        <vaadin-accordion-panel opened$=[[openedFlag]] style="border:1px #ccc solid;padding:10px;">
         <div slot="summary"  on-click="_getStockDetails" stock="[[item.stockId]]" id="[[item.name]]">[[item.name]]</div>
         <span style="display:none;">[[item.stockId]]</span>
         <div id="note">
@@ -133,7 +133,7 @@ class TradingStocksApp extends PolymerElement {
         <div id="stockQuoteDetails">
         <p>Quote (including brokerage) Rs: [[totalPurchasePrice]]</p>
         </div>
-    <paper-button raised on-click="_submitConfirm" >Confirm</paper-button>
+    <paper-button raised on-click="_submitConfirm" disabled$=[[disabledBtn]]>Confirm</paper-button>
     <paper-button raised on-click="_submitCancel">Cancel</paper-button>
     </form>
     <iron-form>
@@ -220,7 +220,11 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
       },
       stockPrevClose:{
           type:String
-      },         
+      },
+      disabledBtn:{
+          type:Boolean,
+          value:true
+      },     
       dayAnalyticsData:{
                 type:Array,
                 value:[{'stockname':"HCL",'quantity':100},
@@ -246,6 +250,8 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
   }
   _handleStockResponse(e){
       this.set('stockList',e.detail.response);
+      //this._getStockDetails();
+
       
   }
   _handleStockPriceResponse(e){
@@ -260,7 +266,9 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
   }
   _getQuote(e){
       this.quoteFlag = 'getquote';
+      let quantityVal = e.target.parentElement.value;
      // if(this.$.stocksListView.querySelector('iron-form').validate()){
+         if(quantityVal){
           this.stockQuantityVal = e.target.parentElement.value;
       this.stockId = this.$.stocksListView.querySelector('span').textContent;
       let data = {
@@ -273,7 +281,7 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
        this.$.getQuoteAjax.body =JSON.stringify(data); 
 
   this.$.getQuoteAjax.generateRequest();
-    //  }
+    }
       
 
   }
@@ -282,7 +290,8 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
       this.totalPurchasePrice = parseFloat(resp.totalIncludingFee).toFixed(4);
       let quote = this.stockPrice * this.stockQuantityVal;
       let stockQuote = parseFloat(quote);
-      this.stockQuote = stockQuote;//parseFloat(resp.totalIncludingFee);
+      this.stockQuote = stockQuote;
+      this.disabledBtn =false;//parseFloat(resp.totalIncludingFee);
       this.fees = 10; //parseFloat(resp.totalFees);
       //this.$.stocksListView.querySelector('#stockQuoteDetails').innerHTML = 'Quote (including brokerage)'+this.totalPurchasePrice;
     //   if(this.quoteFlag == 'confirm'){
@@ -298,7 +307,9 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
   }
 
   _getStockDetails(e){
-      this.stockName = e.target.getAttribute('id');
+          this.stockName = e.target.getAttribute('id');
+      
+      
       this.$.stockPriceAjax.generateRequest();
   }
   _submitCancel(){
@@ -307,11 +318,15 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
       this.$.stocksListView.querySelector('#stockDetails').innerHTML = '';*/
       this.$.stocksListView.querySelector('iron-form').reset();
       this.openedFlag = false;
+      this.disabledBtn =true;
   }
   _submitConfirm(e){
       this.quoteFlag = 'confirm';
-      //if(this.$.stocksListView.querySelector('iron-form').validate()){
-      this.$.actions.toggle();
+      //if(e.target.parentElement.validate()){
+          //if(e.target.parentElement.querySelector('paper-input').value){
+              this.$.actions.toggle();
+          //}
+      
       //}
   }
   _handlePurchaseResponse(e){
@@ -346,7 +361,7 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
   }
   _handleGetDayResponse(e){     
       this.dayAnalyticsData = e.detail.response.stockcountlist;
-        //this.barChartAnalytics(this.$.dayAnalytics,"Day Analytics",this.dayAnalyticsData,'Stocks');
+        this.barChartAnalytics(this.$.dayAnalytics,"Day Analytics",this.dayAnalyticsData,'Stocks');
   }
 
       barChartAnalytics(selectedId,chartText,chartData,xScaleTxt){
