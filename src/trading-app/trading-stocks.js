@@ -21,7 +21,7 @@ class TradingStocksApp extends PolymerElement {
     }
     connectedCallback(){
         super.connectedCallback();
-        this.barChartAnalytics(this.$.dayAnalytics,"Day Analytics",this.dayAnalyticsData,'Stocks');
+        //this.barChartAnalytics(this.$.dayAnalytics,"Day Analytics",this.dayAnalyticsData,'Stocks');
         //this.barChartAnalytics(this.$.hourAnalytics,"Hour Analytics",this.hourAnalyticsData,'Stocks');
     }
   static get template() {
@@ -94,7 +94,7 @@ class TradingStocksApp extends PolymerElement {
           content-type="application/json">
       </iron-ajax>
 
-      <iron-ajax 
+      <iron-ajax auto
           id="getDayAjax"
           url="{{_getConfigData('dayCount')}}"
           handle-as="json"
