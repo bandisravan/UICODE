@@ -10,6 +10,7 @@ import '@polymer/iron-ajax/iron-ajax.js';
 import '@vaadin/vaadin-accordion/vaadin-accordion.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
+import * as d3 from "d3";
 
 class TradingStocksApp extends PolymerElement {
     constructor(){
@@ -20,36 +21,8 @@ class TradingStocksApp extends PolymerElement {
     }
     connectedCallback(){
         super.connectedCallback();
-        this.$.purchaseForm.reset();
-       /* this.$.stockQuantity.addEventListener('change', function(event) { 
-            //calculate the total price
-            this.calculateTotalPrice(event.target.value);  
-                      
-        }.bind(this));*/
-        this.$.purchaseForm.addEventListener('iron-form-submit',function(e){
-            let ajaxEle = this.$.purchaseAjax;
-            ajaxEle.contentType = "application/json";
-            let curData = new Date();
-            let current = curData.getFullYear()+' '+(curData.getMonth()+1)+' '+curData.getDate()+' '+curData.getHours()+':'+curData.getMinutes()+':'+curData.getSeconds();
-            //this.calculateTotalPrice(this.stockQuantityVal);
-            let data = { 
-                "stockId":this.stockId,
-                "stockName" : this.stockName,
-                "userId":1,
-                "quantity" : parseFloat(this.stockQuantityVal),
-                "stockPrice" :parseFloat(this.stockPrice),
-                "totalStockPurchasePrice":parseFloat(this.stockQuote),
-                "totalFees" :parseFloat(this.fees),
-                "totalIncludingFee":parseFloat(this.totalPurchasePrice),
-                "tradedTime": current
-                };
-                ajaxEle.body = JSON.stringify(data);
-                ajaxEle.generateRequest();
-
-            
-        }.bind(this));
-        
-
+        this.barChartAnalytics(this.$.dayAnalytics,"Day Analytics",this.dayAnalyticsData,'Stocks');
+        this.barChartAnalytics(this.$.hourAnalytics,"Hour Analytics",this.hourAnalyticsData,'Stocks');
     }
   static get template() {
     return html`
@@ -69,6 +42,10 @@ class TradingStocksApp extends PolymerElement {
         }
         #note{
             color:#ff6200;
+        }
+        
+        .bar {
+            fill: steelblue;
         }
       </style>
       <!-- [[_getConfigData('stock')]] -->
@@ -120,11 +97,20 @@ class TradingStocksApp extends PolymerElement {
         <div id="note">
       ***Stock prices change regularly and the quote is subject to change.  The order will be placed with the live price at the time of submission. 
       </div>
-        <div id="stockDetails"></div>
+        <div id="stockDetails">
+        <p>Stock Price: Rs [[stockPrice]]</p>
+        <p>Stock Open Price: [[stockOpen]]</p>
+        <p>Stock High Price: [[stockHigh]]</p>
+        <p>Stock Low Price: [[stockLow]]</p>
+        <p>Stock Previous Close Price: [[stockPrevClose]]</p>
+        </div>
 
         <paper-input type="text" name="stockQuantity" id="stockQuantity" auto-validate required label="Stock Quantity" error-message="Enter Stock Quantity" min="1"></paper-input>
         <paper-button raised on-click="_getQuote">Get Quote</paper-button>
-        <div id="stockQuoteDetails"></div>
+        </p>
+        <div id="stockQuoteDetails">
+        <p>'Quote (including brokerage) Rs: [[totalPurchasePrice]]</p>
+        </div>
 
 
 
@@ -139,6 +125,11 @@ class TradingStocksApp extends PolymerElement {
         </vaadin-accordion>
       </table>
       
+      </div>
+
+      <div class="analytics card">
+      <svg width="600" height="500" id="dayAnalytics"></svg> 
+       <svg width="600" height="500" id="hourAnalytics"></svg> 
       </div>
 <paper-dialog id="actions" style="padding:20px;">
 Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
@@ -197,7 +188,36 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
       },
       quoteFlag:{
           type:String
-      }
+      },
+      stockOpen:{
+          type:String
+      },
+      stockHigh:{
+          type:String
+      },
+      stockLow:{
+          type:String
+      },
+      stockPrevClose:{
+          type:String
+      },         
+      dayAnalyticsData:{
+                type:Array,
+                value:[{'name':"HCL",'count':100},
+                {'name':"ING",'count':100},
+                {'name':"PNB",'count':200},
+                {'name':"MSFT",'count':500},
+                {'name':"SBI",'count':650}]
+    },
+            
+    hourAnalyticsData:{
+        type:Array,
+        value:[{'name':"HCL",'count':100},
+                {'name':"ING",'count':100},
+                {'name':"PNB",'count':200},
+                {'name':"MSFT",'count':500},
+                {'name':"SBI",'count':650}]
+    }
     };
   }
 
@@ -210,8 +230,12 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
   }
   _handleStockPriceResponse(e){
       this.stockPrice = e.detail.response['Global Quote']['05. price']; 
+      this.stockOpen = e.detail.response['Global Quote']['02. open']; 
+      this.stockHigh = e.detail.response['Global Quote']['03. high']; 
+      this.stockLow = e.detail.response['Global Quote']['04. low']; 
+      this.stockPrevClose = e.detail.response['Global Quote']['08. previous close']; 
       this.push('stockData',this.stockData);
-      this.$.stocksListView.querySelector('#stockDetails').innerHTML = 'Stock Price: Rs '+this.stockPrice;
+      //this.$.stocksListView.querySelector('#stockDetails').style = 'Stock Price: Rs '+this.stockPrice;
       
   }
   _getQuote(e){
@@ -237,10 +261,10 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
       let stockQuote = parseFloat(quote);
       this.stockQuote = stockQuote;//parseFloat(resp.totalIncludingFee);
       this.fees = 10; //parseFloat(resp.totalFees);
-      this.$.stocksListView.querySelector('#stockQuoteDetails').innerHTML = 'Quote (including brokerage)'+this.totalPurchasePrice;
-      if(this.quoteFlag == 'confirm'){
+      //this.$.stocksListView.querySelector('#stockQuoteDetails').innerHTML = 'Quote (including brokerage)'+this.totalPurchasePrice;
+    //   if(this.quoteFlag == 'confirm'){
 
-      }
+    //   }
 
   }
   _stockSelected(e){
@@ -255,10 +279,10 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
       this.$.stockPriceAjax.generateRequest();
   }
   _submitCancel(){
-      //this.$.purchaseForm.reset();
-      this.$.stocksListView.querySelector('paper-input').value = null;
+     /* this.$.stocksListView.querySelector('paper-input').value = null;
       this.$.stocksListView.querySelector('#stockQuoteDetails').innerHTML='';
-      this.$.stocksListView.querySelector('#stockDetails').innerHTML = '';
+      this.$.stocksListView.querySelector('#stockDetails').innerHTML = '';*/
+      this.openedFlag = false;
   }
   _submitConfirm(e){
       this.quoteFlag = 'confirm';
@@ -290,6 +314,64 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
                 ajaxEle.body = JSON.stringify(data);
                 ajaxEle.generateRequest();
   }
+
+      barChartAnalytics(selectedId,chartText,chartData,xScaleTxt){
+        var svg = d3.select(selectedId),
+        margin = 200,
+        width = svg.attr("width") - margin,
+        height = svg.attr("height") - margin;
+const color = d3.scaleOrdinal(['#4daf4a','#377eb8','#ff7f00','#984ea3','#e41a1c']);
+    svg.append("text")
+       .attr("transform", "translate(100,0)")
+       .attr("x", 50)
+       .attr("y", 50)
+       .attr("font-size", "24px")
+       .text(chartText)
+
+    var xScale = d3.scaleBand().range([0, width]).padding(0.4),
+        yScale = d3.scaleLinear().range([height, 0]);
+
+    var g = svg.append("g")
+               .attr("transform", "translate(" + 100 + "," + 100 + ")");    
+        
+        var data = chartData;
+       
+        xScale.domain(data.map(function(d) { return d.name; }));
+        yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
+
+        g.append("g")
+         .attr("transform", "translate(0," + height + ")")
+         .call(d3.axisBottom(xScale))
+         .append("text")
+         .attr("y", height - 250)
+         .attr("x", width - 100)
+         .attr("text-anchor", "end")
+         .attr("stroke", "black")
+         .text(xScaleTxt);
+
+        g.append("g")
+         .call(d3.axisLeft(yScale).tickFormat(function(d){
+             return d;
+         })
+         .ticks(10))
+         .append("text")
+         .attr("transform", "rotate(-90)")
+         .attr("y", 6)
+         .attr("dy", "-5.1em")
+         .attr("text-anchor", "end")
+         .attr("stroke", "black")
+         .text("Quantity");
+
+        g.selectAll(".bar")
+         .data(data)
+         .enter().append("rect")
+         .attr("x", function(d) { return xScale(d.name); })
+         .attr("y", function(d) { return yScale(d.count); })
+         .attr("width", xScale.bandwidth())         
+         .attr("fill", function(g,i) { return color(i); })
+         .attr("height", function(d) { return height - yScale(d.count); });
+    
+    }
    
 
 }
