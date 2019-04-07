@@ -8,7 +8,8 @@
   "extraDependencies": [
     "manifest.json",
     "node_modules/@webcomponents/webcomponentsjs/**",
-    "node_modules/web-animations-js/**"
+    "node_modules/web-animations-js/**",
+    "config.js"
   ],
   "npm": true,
   "builds": [

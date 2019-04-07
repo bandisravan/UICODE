@@ -47,7 +47,7 @@ class TradingApp extends PolymerElement {
           padding:0 10px;         
         }
       </style>
-      <app-location route="{{route}}"  url-space-regex="^[[rootPath]]"></app-location>
+      <app-location route="{{route}}"  url-space-regex="^[[rootPath]]" use-hash-as-path></app-location>
       <app-route route="{{route}}" pattern="/:page" data="{{routeData}}"></app-route> 
       <app-localstorage-document key="userData" data="{{userData}}" storage="window.localStorage"></app-localstorage-document>
        
@@ -56,16 +56,16 @@ class TradingApp extends PolymerElement {
                 <app-toolbar>
                   <div main-title>ING Online Trader</div> 
                   <iron-selector selected="[[page]]" attr-for-selected="name">
-                    <a name="home" href="[[rootPath]]home">Home</a>
-                      <a name="buy" href="[[rootPath]]buy">Purchase</a>
-                      <a name="history" href="[[rootPath]]history">History</a>
+                    <a name="home" href="#/home">Home</a>
+                      <a name="buy" href="#/stocks">Purchase</a>
+                      <a name="history" href="#/history">History</a>
                   </iron-selector>               
                 </app-toolbar>
             </app-header>
         </app-header-layout>
         <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
           <trading-login name="home" route="{{route}}"></trading-login>
-          <trading-buy name="buy" route="{{route}}"></trading-buy>
+          <trading-stocks name="stocks" route="{{route}}"></trading-stocks>
           <trading-history name="history" route="{{route}}"></trading-history>
           <trading-notfound name="notFound" route="{{route}}"></trading-notfound>
         </iron-pages>
@@ -94,7 +94,7 @@ class TradingApp extends PolymerElement {
   _routePageChanged(page) {
     if (!page) {
       this.page = 'home';
-    }else if (['home','buy', 'summary','history'].indexOf(page) !== -1) {
+    }else if (['home','stocks', 'summary','history'].indexOf(page) !== -1) {
       this.page = page;
     } else {
       this.page = 'notFound';
@@ -105,8 +105,8 @@ class TradingApp extends PolymerElement {
       case 'home':
         import('./trading-login.js');
         break;
-      case 'buy':
-        import('./trading-buy.js');
+      case 'stocks':
+        import('./trading-stocks.js');
         break;
       case 'summary':
         import('./trading-summary.js');
