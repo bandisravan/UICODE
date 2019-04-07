@@ -14,7 +14,7 @@
   "npm": true,
   "builds": [
     {
-      "name": "es5prod",
+      "name": "trading",
       "preset": "es5-bundled"
     }
   ],
