@@ -140,17 +140,23 @@ class TradingStocksApp extends PolymerElement {
       </table>
       
       </div>
+<paper-dialog id="actions" style="padding:20px;">
+Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
+    <div class="buttons">
+    <paper-button dialog-dismiss>NO</paper-button>
+    <paper-button autofocus on-click="_submitStockPurchase">YES</paper-button>
+  </div>
+</paper-dialog>
 
-
-      <div id="formView">
-      <h2>Purchase Stock</h2>
-      
-    <div id="showSummary" style="display:none;">
+<paper-dialog id="showSummary" style="padding:20px;">
+<div >
 <p>Purchased Successfully.</p> <p>Stock Name: [[stockName]]</p><p>Stock Purchase Price: [[totalPurchasePrice]]</p>
     </div>
       </div>
-      <paper-toast text="Submitted Successfully" id="notifyMsg" horizontal-align="right">
-</paper-toast>
+    <div class="buttons">
+    <paper-button dialog-dismiss>OK</paper-button>
+  </div>
+</paper-dialog>
     `;
   }
   static get properties() {
@@ -210,12 +216,13 @@ class TradingStocksApp extends PolymerElement {
   }
   _getQuote(e){
       this.quoteFlag = 'getquote';
+      this.stockQuantityVal = this.$.stocksListView.querySelector('paper-input').value;
       this.stockId = this.$.stocksListView.querySelector('span').textContent;
       let data = {
         "stockId":this.stockId,
         "stockName": this.stockName,
         "stockPrice": this.stockPrice,
-        "quantity":  this.$.stocksListView.querySelector('paper-input').value
+        "quantity": this.stockQuantityVal
         }
         this.$.getQuoteAjax.contentType = 'application/json';
        this.$.getQuoteAjax.body =JSON.stringify(data); 
@@ -226,6 +233,10 @@ class TradingStocksApp extends PolymerElement {
   _handleGetQuoteResponse(e){
       let resp = e.detail.response;
       this.totalPurchasePrice = parseFloat(resp.totalIncludingFee).toFixed(4);
+      let quote = this.stockPrice * this.stockQuantityVal;
+      let stockQuote = parseFloat(quote);
+      this.stockQuote = stockQuote;//parseFloat(resp.totalIncludingFee);
+      this.fees = 10; //parseFloat(resp.totalFees);
       this.$.stocksListView.querySelector('#stockQuoteDetails').innerHTML = 'Quote (including brokerage)'+this.totalPurchasePrice;
       if(this.quoteFlag == 'confirm'){
 
@@ -244,16 +255,40 @@ class TradingStocksApp extends PolymerElement {
       this.$.stockPriceAjax.generateRequest();
   }
   _submitCancel(){
-      this.$.purchaseForm.reset();
+      //this.$.purchaseForm.reset();
+      this.$.stocksListView.querySelector('paper-input').value = null;
       this.$.stocksListView.querySelector('#stockQuoteDetails').innerHTML='';
       this.$.stocksListView.querySelector('#stockDetails').innerHTML = '';
   }
   _submitConfirm(e){
       this.quoteFlag = 'confirm';
+      this.$.actions.toggle();
   }
   _handlePurchaseResponse(e){
-      this.$.showForm.style.display="none";
-      this.$.showSummary.style.display="block";
+      this.$.actions.toggle();
+      this.$.showSummary.toggle();
+      this._submitCancel();
+  }
+
+  _submitStockPurchase(e){
+      let ajaxEle = this.$.purchaseAjax;
+            ajaxEle.contentType = "application/json";
+            let curData = new Date();
+            let current = curData.getFullYear()+'-'+(curData.getMonth()+1)+'-'+curData.getDate()+' '+curData.getHours()+':'+curData.getMinutes()+':'+curData.getSeconds();
+            
+            let data = { 
+                "stockId":this.stockId,
+                "stockName" : this.stockName,
+                "userId":1,
+                "quantity" : parseFloat(this.stockQuantityVal),
+                "stockPrice" :parseFloat(this.stockPrice),
+                "totalStockPurchasePrice":parseFloat(this.stockQuote),
+                "totalFees" :parseFloat(this.fees),
+                "totalIncludingFee":parseFloat(this.totalPurchasePrice),
+                "tradedTime": current
+                };
+                ajaxEle.body = JSON.stringify(data);
+                ajaxEle.generateRequest();
   }
    
 
