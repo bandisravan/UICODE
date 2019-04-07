@@ -52,7 +52,7 @@ class TradingLoginApp extends PolymerElement {
       let uName = selItem.textContent;
       let uId =selItem.getAttribute('value');
       this.user = {'name':this.$.userSelect.selectedItemLabel, "userId":1}
-      this.set('route.path','/buy');
+      this.set('route.path','/stocks');
   }
 
 }

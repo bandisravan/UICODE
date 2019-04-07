@@ -54,10 +54,10 @@ class TradingApp extends PolymerElement {
       <app-header-layout>
             <app-header slot="header">
                 <app-toolbar>
-                  <div main-title>ING Online Trader</div> 
+                  <div main-title class="headerTitle">ING Online Trader</div> 
                   <iron-selector selected="[[page]]" attr-for-selected="name">
                     <a name="home" href="#/home">Home</a>
-                      <a name="buy" href="#/stocks">Purchase</a>
+                      <a name="buy" href="#/stocks">Stocks</a>
                       <a name="history" href="#/history">History</a>
                   </iron-selector>               
                 </app-toolbar>

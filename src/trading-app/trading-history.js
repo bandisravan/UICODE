@@ -30,7 +30,7 @@ class TradingHistoryApp extends PolymerElement {
       </style>
       <iron-ajax
           id="historyAjax"
-          url="http://13.126.214.15:9090/api/v1/viewHistory/1"
+          url="{{_getConfigData('viewHistory/1')}}"
           handle-as="json"
           method="GET"
           on-response="_handleHistoryResponse">
@@ -55,7 +55,9 @@ class TradingHistoryApp extends PolymerElement {
       }
     };
   }
-
+ _getConfigData(path){
+    return config.baseURL + '/' + path;
+  }
   _handleHistoryResponse(e){
       this.historyList =e.detail.response;
   }

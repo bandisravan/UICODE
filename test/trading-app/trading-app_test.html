@@ -35,8 +35,8 @@
           var element = fixture('BasicTestFixture');
           assert.equal(element.prop1, 'trading-app');
           var elementShadowRoot = element.shadowRoot;
-          var elementHeader = elementShadowRoot.querySelector('h2');
-          assert.equal(elementHeader.innerHTML, 'Hello trading-app!');
+          var elementHeader = elementShadowRoot.querySelector('headerTitle');
+          assert.equal(elementHeader.innerHTML, 'ING Online Trader');
         });
 
         test('setting a property on the element works', function() {

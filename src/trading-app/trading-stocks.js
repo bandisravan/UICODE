@@ -22,7 +22,7 @@ class TradingStocksApp extends PolymerElement {
     connectedCallback(){
         super.connectedCallback();
         this.barChartAnalytics(this.$.dayAnalytics,"Day Analytics",this.dayAnalyticsData,'Stocks');
-        this.barChartAnalytics(this.$.hourAnalytics,"Hour Analytics",this.hourAnalyticsData,'Stocks');
+        //this.barChartAnalytics(this.$.hourAnalytics,"Hour Analytics",this.hourAnalyticsData,'Stocks');
     }
   static get template() {
     return html`
@@ -43,12 +43,15 @@ class TradingStocksApp extends PolymerElement {
         #note{
             color:#ff6200;
         }
+        .quoteBtn{
+            background:#ff6200;
+            color:#fff;
+        }
         
         .bar {
             fill: steelblue;
         }
       </style>
-      <!-- [[_getConfigData('stock')]] -->
       <iron-ajax
           auto
           url="{{_getConfigData('stock')}}"
@@ -81,6 +84,24 @@ class TradingStocksApp extends PolymerElement {
           on-response="_handlePurchaseResponse"
           content-type="application/json">
       </iron-ajax>
+      
+<iron-ajax auto
+          id="getHourAjax"
+          url="{{_getConfigData('hourlyCount')}}"
+          handle-as="json"
+          method="GET"
+          on-response="_handleGetHourResponse"
+          content-type="application/json">
+      </iron-ajax>
+
+      <iron-ajax 
+          id="getDayAjax"
+          url="{{_getConfigData('dayCount')}}"
+          handle-as="json"
+          method="GET"
+          on-response="_handleGetDayResponse"
+          content-type="application/json">
+      </iron-ajax>
 
       
       <div id="stocksListView"  class="card">
@@ -89,8 +110,8 @@ class TradingStocksApp extends PolymerElement {
         
         <vaadin-accordion>
         <template is="dom-repeat" items="[[stockList]]">
-        <tr style="border:1px #solid #000; width:600px;">
-        <td style="border:1px #solid #000; width:600px;">
+        <tr style="1px #000 solid !important; width:600px;">
+        <td style="1px #000 solid !important; width:600px;">
         <vaadin-accordion-panel opened$=[[openedFlag]]>
         <div slot="summary"  on-click="_getStockDetails" stock="[[item.stockId]]" id="[[item.name]]">[[item.name]]</div>
         <span style="display:none;">[[item.stockId]]</span>
@@ -104,19 +125,18 @@ class TradingStocksApp extends PolymerElement {
         <p>Stock Low Price: [[stockLow]]</p>
         <p>Stock Previous Close Price: [[stockPrevClose]]</p>
         </div>
-
-        <paper-input type="text" name="stockQuantity" id="stockQuantity" auto-validate required label="Stock Quantity" error-message="Enter Stock Quantity" min="1"></paper-input>
-        <paper-button raised on-click="_getQuote">Get Quote</paper-button>
+        <iron-form id="purchaseForm">
+        <form>
+        <paper-input type="text" name="stockQuantity" id="stockQuantity" auto-validate required label="Stock Quantity" error-message="Enter Stock Quantity" min="1"><paper-button slot="suffix" class="quoteBtn" raised on-click="_getQuote">Get Quote</paper-button></paper-input>
+        
         </p>
         <div id="stockQuoteDetails">
-        <p>'Quote (including brokerage) Rs: [[totalPurchasePrice]]</p>
+        <p>Quote (including brokerage) Rs: [[totalPurchasePrice]]</p>
         </div>
-
-
-
-    <paper-button raised on-click="_submitConfirm">Confirm</paper-button>
+    <paper-button raised on-click="_submitConfirm" >Confirm</paper-button>
     <paper-button raised on-click="_submitCancel">Cancel</paper-button>
-
+    </form>
+    <iron-form>
         </vaadin-accordion-panel>
         </td>
         </tr>
@@ -203,20 +223,20 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
       },         
       dayAnalyticsData:{
                 type:Array,
-                value:[{'name':"HCL",'count':100},
-                {'name':"ING",'count':100},
-                {'name':"PNB",'count':200},
-                {'name':"MSFT",'count':500},
-                {'name':"SBI",'count':650}]
+                value:[{'stockname':"HCL",'quantity':100},
+                {'stockname':"ING",'quantity':100},
+                {'stockname':"PNB",'quantity':290},
+                {'stockname':"MSFT",'quantity':500},
+                {'stockname':"SBI",'quantity':650}]
     },
             
     hourAnalyticsData:{
         type:Array,
-        value:[{'name':"HCL",'count':100},
-                {'name':"ING",'count':100},
-                {'name':"PNB",'count':200},
-                {'name':"MSFT",'count':500},
-                {'name':"SBI",'count':650}]
+        value:[{'stockname':"HCL",'quantity':100},
+                {'stockname':"ING",'quantity':100},
+                {'stockname':"PNB",'quantity':230},
+                {'stockname':"MSFT",'quantity':500},
+                {'stockname':"SBI",'quantity':650}]
     }
     };
   }
@@ -240,7 +260,8 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
   }
   _getQuote(e){
       this.quoteFlag = 'getquote';
-      this.stockQuantityVal = this.$.stocksListView.querySelector('paper-input').value;
+     // if(this.$.stocksListView.querySelector('iron-form').validate()){
+          this.stockQuantityVal = e.target.parentElement.value;
       this.stockId = this.$.stocksListView.querySelector('span').textContent;
       let data = {
         "stockId":this.stockId,
@@ -252,6 +273,8 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
        this.$.getQuoteAjax.body =JSON.stringify(data); 
 
   this.$.getQuoteAjax.generateRequest();
+    //  }
+      
 
   }
   _handleGetQuoteResponse(e){
@@ -282,11 +305,14 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
      /* this.$.stocksListView.querySelector('paper-input').value = null;
       this.$.stocksListView.querySelector('#stockQuoteDetails').innerHTML='';
       this.$.stocksListView.querySelector('#stockDetails').innerHTML = '';*/
+      this.$.stocksListView.querySelector('iron-form').reset();
       this.openedFlag = false;
   }
   _submitConfirm(e){
       this.quoteFlag = 'confirm';
+      //if(this.$.stocksListView.querySelector('iron-form').validate()){
       this.$.actions.toggle();
+      //}
   }
   _handlePurchaseResponse(e){
       this.$.actions.toggle();
@@ -314,6 +340,14 @@ Stock latest price is Rs: [[totalPurchasePrice]]. Do you want to continue?
                 ajaxEle.body = JSON.stringify(data);
                 ajaxEle.generateRequest();
   }
+  _handleGetHourResponse(e){   
+      this.hourAnalyticsData = e.detail.response.stockcountlist;
+       this.barChartAnalytics(this.$.hourAnalytics,"Hour Analytics",this.hourAnalyticsData,'Stocks');
+  }
+  _handleGetDayResponse(e){     
+      this.dayAnalyticsData = e.detail.response.stockcountlist;
+        //this.barChartAnalytics(this.$.dayAnalytics,"Day Analytics",this.dayAnalyticsData,'Stocks');
+  }
 
       barChartAnalytics(selectedId,chartText,chartData,xScaleTxt){
         var svg = d3.select(selectedId),
@@ -336,8 +370,8 @@ const color = d3.scaleOrdinal(['#4daf4a','#377eb8','#ff7f00','#984ea3','#e41a1c'
         
         var data = chartData;
        
-        xScale.domain(data.map(function(d) { return d.name; }));
-        yScale.domain([0, d3.max(data, function(d) { return d.count; })]);
+        xScale.domain(data.map(function(d) { return d.stockname; }));
+        yScale.domain([0, d3.max(data, function(d) { return d.quantity; })]);
 
         g.append("g")
          .attr("transform", "translate(0," + height + ")")
@@ -365,11 +399,11 @@ const color = d3.scaleOrdinal(['#4daf4a','#377eb8','#ff7f00','#984ea3','#e41a1c'
         g.selectAll(".bar")
          .data(data)
          .enter().append("rect")
-         .attr("x", function(d) { return xScale(d.name); })
-         .attr("y", function(d) { return yScale(d.count); })
+         .attr("x", function(d) { return xScale(d.stockname); })
+         .attr("y", function(d) { return yScale(d.quantity); })
          .attr("width", xScale.bandwidth())         
          .attr("fill", function(g,i) { return color(i); })
-         .attr("height", function(d) { return height - yScale(d.count); });
+         .attr("height", function(d) { return height - yScale(d.quantity); });
     
     }
    
